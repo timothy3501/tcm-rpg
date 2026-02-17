@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>中醫冒險者 — TCM RPG</title>
+  <meta name="description" content="遊戲化生活管理系統 — 像素RPG風格">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Loading screen -->
+  <div id="loading-screen" class="loading-screen">
+    <div class="loading-content">
+      <div class="pixel-logo">⚔️</div>
+      <h1 class="loading-title">中醫冒險者</h1>
+      <p class="loading-sub">TCM ADVENTURER</p>
+      <div class="loading-bar"><div class="loading-fill"></div></div>
+    </div>
+  </div>
+
+  <!-- Name input modal (first time) -->
+  <div id="name-modal" class="modal hidden">
+    <div class="modal-box">
+      <h2>⚔️ 歡迎，新冒險者</h2>
+      <p>請輸入你的角色名稱：</p>
+      <input type="text" id="name-input" class="pixel-input" placeholder="輸入名稱..." maxlength="10">
+      <button id="name-confirm" class="pixel-btn btn-gold">開始冒險！</button>
+    </div>
+  </div>
+
+  <!-- Gacha animation modal -->
+  <div id="gacha-modal" class="modal hidden">
+    <div class="modal-box gacha-box">
+      <div id="gacha-animation" class="gacha-animation"></div>
+      <div id="gacha-result" class="gacha-result hidden">
+        <div id="gacha-chest-type" class="gacha-chest-type"></div>
+        <div id="gacha-reward-text" class="gacha-reward-text"></div>
+        <button class="pixel-btn btn-blue" onclick="App.closeGachaModal()">收下！</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Photo upload modal -->
+  <div id="photo-modal" class="modal hidden">
+    <div class="modal-box">
+      <h2>📸 上傳完成證明</h2>
+      <p id="photo-quest-name"></p>
+      <input type="file" id="photo-input" accept="image/*" capture="environment" class="photo-input">
+      <label for="photo-input" class="pixel-btn btn-blue">選擇照片 / 拍照</label>
+      <div id="photo-preview" class="photo-preview hidden">
+        <img id="photo-img" src="" alt="preview">
+      </div>
+      <div class="modal-actions">
+        <button class="pixel-btn btn-gray" onclick="App.closePhotoModal()">取消</button>
+        <button id="photo-confirm" class="pixel-btn btn-gold hidden" onclick="App.confirmPhoto()">確認上傳</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Save sync modal -->
+  <div id="sync-modal" class="modal hidden">
+    <div class="modal-box">
+      <h2>🔄 存檔同步</h2>
+      <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:1rem">在不同裝置之間同步你的遊戲進度</p>
+
+      <div style="margin-bottom:1.5rem">
+        <h3 style="font-size:0.9rem;margin-bottom:0.5rem">📤 匯出存檔</h3>
+        <p style="font-size:0.8rem;color:var(--text-secondary);margin-bottom:0.5rem">複製代碼 → 到另一個裝置貼上匯入</p>
+        <button class="pixel-btn btn-gold" onclick="App.exportSave()" style="width:100%">複製存檔到剪貼簿</button>
+        <div id="export-status" style="font-size:0.75rem;color:var(--text-green);margin-top:0.25rem;text-align:center"></div>
+      </div>
+
+      <div style="margin-bottom:1.5rem">
+        <h3 style="font-size:0.9rem;margin-bottom:0.5rem">📥 匯入存檔</h3>
+        <p style="font-size:0.8rem;color:var(--text-secondary);margin-bottom:0.5rem">貼上從另一台裝置複製的代碼</p>
+        <textarea id="import-data" class="pixel-input" rows="3" placeholder="貼上存檔代碼..." style="width:100%;resize:none;font-size:0.75rem"></textarea>
+        <button class="pixel-btn btn-blue" onclick="App.importSave()" style="width:100%;margin-top:0.5rem">匯入存檔</button>
+        <div id="import-status" style="font-size:0.75rem;margin-top:0.25rem;text-align:center"></div>
+      </div>
+
+      <button class="pixel-btn btn-gray" onclick="App.closeSyncModal()" style="width:100%">關閉</button>
+    </div>
+  </div>
+
+  <!-- Main app container -->
+  <div id="app" class="app-container hidden">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-left">
+        <span class="header-level" id="header-level">Lv.1</span>
+        <span class="header-name" id="header-name">冒險者</span>
+      </div>
+      <div class="header-right">
+        <span class="currency-display">💎 <span id="header-currency">0</span></span>
+        <button class="sync-btn" onclick="App.openSyncModal()" title="存檔同步">⚙️</button>
+      </div>
+    </header>
+
+    <!-- Page content -->
+    <main id="page-content" class="page-content"></main>
+
+    <!-- Bottom nav -->
+    <nav class="bottom-nav">
+      <button class="nav-btn active" data-page="dashboard" onclick="App.navigate('dashboard')">
+        <span class="nav-icon">🏠</span><span class="nav-label">主頁</span>
+      </button>
+      <button class="nav-btn" data-page="quests" onclick="App.navigate('quests')">
+        <span class="nav-icon">⚔️</span><span class="nav-label">任務</span>
+      </button>
+      <button class="nav-btn" data-page="character" onclick="App.navigate('character')">
+        <span class="nav-icon">👤</span><span class="nav-label">角色</span>
+      </button>
+      <button class="nav-btn" data-page="skills" onclick="App.navigate('skills')">
+        <span class="nav-icon">🌳</span><span class="nav-label">技能</span>
+      </button>
+      <button class="nav-btn" data-page="shop" onclick="App.navigate('shop')">
+        <span class="nav-icon">🏪</span><span class="nav-label">商城</span>
+      </button>
+    </nav>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
